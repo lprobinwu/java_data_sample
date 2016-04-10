@@ -657,5 +657,124 @@ public class BinaryTreeSample {
         return true;
     }
 
+    /**
+     * 判断二叉树是不是平衡二叉树 递归解法：
+     * （1）如果二叉树为空，返回真
+     * （2）如果二叉树不为空，如果左子树和右子树都是AVL树并且左子树和右子树高度相差不大于1，返回真，其他返回假
+     */
+    public static boolean isAVLRec(TreeNode root) {
+        if (root == null) {
+            return true;
+        }
+
+        if (Math.abs(getDepthRec(root.left) - getDepthRec(root.right)) > 1) {
+            return false;
+        }
+
+        return isAVLRec(root.left) && isAVLRec(root.right);
+    }
+
+    /**
+     * 求二叉树的镜像 递归解法：
+     * （1）如果二叉树为空，返回空
+     * （2）如果二叉树不为空，求左子树和右子树的镜像，然后交换左子树和右子树
+     */
+    // 1. 破坏原来的树，把原来的树改成其镜像
+    public static TreeNode mirrorRec(TreeNode root) {
+        if (root == null) {
+            return null;
+        }
+
+        TreeNode left = mirrorRec(root.right);
+        TreeNode right = mirrorRec(root.left);
+
+        root.left = left;
+        root.right = right;
+
+        return root;
+    }
+
+    // 2. 不能破坏原来的树，返回一个新的镜像树
+    public static TreeNode mirrorCopyRec(TreeNode root){
+        if (root == null) {
+            return null;
+        }
+
+        TreeNode newRoot = new TreeNode(root.val);
+        newRoot.left = mirrorCopyRec(root.right);
+        newRoot.right = mirrorCopyRec(root.left);
+
+        return newRoot;
+    }
+
+    // 3. 判断两个树是否互相镜像
+    public static boolean isMirrorRec(TreeNode r1, TreeNode r2){
+        if (r1 == null || r2 == null) {
+            return (r1 == r2);
+        }
+        if (r1.val != r2.val) {
+            return false;
+        }
+        return isMirrorRec(r1.left, r2.right) && isMirrorRec(r1.right, r2.left);
+    }
+
+    // 1. 破坏原来的树，把原来的树改成其镜像
+    // Change root in this case
+    public static void mirror(TreeNode root) {
+        if (root == null) {
+            return;
+        }
+
+        // Note that change queue to stack
+        // will work as well
+        Queue<TreeNode> queue = new LinkedList<TreeNode>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node.left != null) {
+                queue.offer(node.left);
+            }
+            if (node.right != null) {
+                queue.offer(node.right);
+            }
+
+            // change left and right here.
+            TreeNode temp = node.left;
+            node.left = node.right;
+            node.right = temp;
+        }
+    }
+
+    // 2. 不能破坏原来的树，返回一个新的镜像树
+    public static TreeNode mirrorCopy(TreeNode root){
+        if (root == null) {
+            return null;
+        }
+
+        TreeNode newRoot = new TreeNode(root.val);
+        Stack<TreeNode> s1 = new Stack<TreeNode>();
+        s1.push(root);
+        Stack<TreeNode> s2 = new Stack<TreeNode>();
+        s2.push(newRoot);
+
+        while (!s1.isEmpty() && !s2.isEmpty()) {
+            TreeNode n1 = s1.pop();
+            TreeNode n2 = s2.pop();
+
+            if (n1.left != null) {
+                s1.push(n1.left);
+                n2.right = new TreeNode(n1.left.val);
+                s2.push(n2.right);
+            }
+            if (n1.right != null) {
+                s1.push(n1.right);
+                n2.left = new TreeNode(n1.right.val);
+                s2.push(n2.left);
+            }
+        }
+
+        return newRoot;
+    }
+
 }
 
