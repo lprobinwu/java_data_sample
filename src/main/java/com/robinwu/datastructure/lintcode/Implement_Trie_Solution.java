@@ -1,5 +1,6 @@
 package com.robinwu.datastructure.lintcode;
 
+import javax.swing.tree.TreeNode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class Implement_Trie_Solution {
         // Initialize your data structure here.
         String val;
         boolean isWord = false;
-        List<TrieNode> children = new ArrayList<>();
+        List<TrieNode> children = new ArrayList<TrieNode>();
 
         public TrieNode() {
 

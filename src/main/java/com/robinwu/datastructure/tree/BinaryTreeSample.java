@@ -159,9 +159,13 @@ public class BinaryTreeSample {
         int count = 0;
         while (!queue.isEmpty()) {
             TreeNode node = queue.remove();
-            count ++;
-            if (node.left != null) queue.add(node.left);
-            if (node.right != null) queue.add(node.right);
+            count++;
+            if (node.left != null) {
+                queue.add(node.left);
+            }
+            if (node.right != null) {
+                queue.add(node.right);
+            }
         }
         return count;
     }
@@ -240,8 +244,12 @@ public class BinaryTreeSample {
             System.out.print(node.val + " ");
 
             // 关键点：要先压入右孩子，再压入左孩子，这样在出栈时会先打印左孩子再打印右孩子
-            if (node.right != null) stack.push(node.right);
-            if (node.left != null) stack.push(node.left);
+            if (node.right != null) {
+                stack.push(node.right);
+            }
+            if (node.left != null) {
+                stack.push(node.left);
+            }
         }
     }
 
@@ -325,6 +333,7 @@ public class BinaryTreeSample {
     /**
      *  后序遍历迭代解法
      *  http://www.youtube.com/watch?v=hv-mJUs5mvU
+     *  This is the opposite of preorder traversal
      *
      */
     public static void postorderTraversal(TreeNode root) {
@@ -382,18 +391,18 @@ public class BinaryTreeSample {
         if (root == null) return;
 
         ArrayList<ArrayList<Integer>> ret = new ArrayList<ArrayList<Integer>>();
-        dsf(root, 0, ret);
+        dfs(root, 0, ret);
         System.out.println(ret);
     }
 
-    private static void dsf(TreeNode root, int level, ArrayList<ArrayList<Integer>> ret) {
+    private static void dfs(TreeNode root, int level, ArrayList<ArrayList<Integer>> ret) {
         if (root == null) return;
         if (level >= ret.size()) {        // 添加一个新的ArrayList表示新的一层
             ret.add(new ArrayList<Integer>());
         }
         ret.get(level).add(root.val);     // 把节点添加到表示那一层的ArrayList里
-        dsf(root.left, level + 1, ret);   // 递归处理下一层的左子树和右子树
-        dsf(root.right, level + 1, ret);
+        dfs(root.left, level + 1, ret);   // 递归处理下一层的左子树和右子树
+        dfs(root.right, level + 1, ret);
     }
 
     /**
@@ -435,6 +444,217 @@ public class BinaryTreeSample {
             temp.left = root;
         }
         return root;
+    }
+
+    /**
+     * TODO
+     * @param root
+     * @return
+     */
+    public static TreeNode convertBST2DLL(TreeNode root) {
+        if (root == null) return null;
+
+        TreeNode head = null;
+        TreeNode pre = null;
+        TreeNode cur = root;
+        Stack<TreeNode> stack = new Stack<TreeNode>();
+
+        while (true) {
+            while (cur != null) {
+                stack.push(cur);
+                cur = cur.left;
+            }
+            if (stack.isEmpty()) {
+                break;
+            }
+
+            cur = stack.pop();
+            if (head == null) {
+                head = cur;
+            } else {
+                pre.right = cur;
+                cur.left = pre;
+            }
+            pre = cur;
+
+            cur = cur.right;
+        }
+
+        return head;
+    }
+
+    /**
+     * 求二叉树第K层的节点个数   递归解法
+     * Note. the first level is the root level.
+     * @return the count of nodes
+     */
+    public static int getNodeNumKthLevelRec(TreeNode root, int k) {
+        if (root == null || k < 1) {
+            return 0;
+        }
+        if (k == 1) {
+            return 1;
+        }
+        int leftCount = getNodeNumKthLevelRec(root.left, k - 1);
+        int rightCount = getNodeNumKthLevelRec(root.right, k - 1);
+
+        return leftCount + rightCount;
+    }
+
+    /**
+     * 求二叉树第K层的节点个数
+     * Non-Recursive solution
+     * Note. the first level is the root level.
+     * @return the count of nodes
+     */
+    public static int getNodeNumKthLevel(TreeNode root, int k) {
+        if (root == null || k < 1) {
+            return 0;
+        }
+        Queue<TreeNode> queue = new LinkedList<TreeNode>();
+        queue.add(root);
+
+        while (!queue.isEmpty() && k > 1) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.remove();
+                if (node.left != null) {
+                    queue.add(node.left);
+                }
+                if (node.right != null) {
+                    queue.add(node.right);
+                }
+            }
+
+            k--;
+        }
+
+        return queue.size();
+    }
+
+    public static int getNodeNumKthLevelRec1(TreeNode root, int k) {
+        if (root == null || k < 1) {
+            return 0;
+        }
+
+        int[] res = new int[1];
+        dfs1(root, 1, k, res);
+
+        return res[0];
+    }
+
+    private static void dfs1(TreeNode node, int level, int k, int[] res) {
+        if (level == k) {
+            res[0]++;
+            return;
+        }
+
+        if (node.left != null) {
+            dfs1(node.left, level + 1, k, res);
+        }
+        if (node.right != null) {
+            dfs1(node.right, level + 1, k, res);
+        }
+    }
+
+    /**
+     * 求二叉树中叶子节点的个数（递归）
+     */
+    public static int getNodeNumLeafRec(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+
+        if (root.left == null && root.right == null) {
+            return 1;
+        }
+
+        return getNodeNumLeafRec(root.left) + getNodeNumLeafRec(root.right);
+    }
+
+    /**
+     *  求二叉树中叶子节点的个数（迭代）
+     *  还是基于Level order traversal
+     */
+    public static int getNodeNumLeaf(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+
+        Queue<TreeNode> queue = new LinkedList<TreeNode>();
+        queue.offer(root);
+
+        int count = 0;
+
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node.left != null) {
+                queue.offer(node.left);
+            }
+            if (node.right != null) {
+                queue.offer(node.right);
+            }
+            if (node.left == null && node.right == null) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * 判断两棵二叉树是否相同的树。
+     * 递归解法：
+     * （1）如果两棵二叉树都为空，返回真
+     * （2）如果两棵二叉树一棵为空，另一棵不为空，返回假
+     * （3）如果两棵二叉树都不为空，如果对应的左子树和右子树都同构返回真，其他返回假
+     */
+    public static boolean isSameRec(TreeNode r1, TreeNode r2) {
+        if (r1 == null && r2 == null) {
+            return true;
+        }
+
+        if (r1 == null || r2 == null || r1.val != r2.val) {
+            return false;
+        }
+
+        return isSameRec(r1.left, r2.left) && isSameRec(r1.right, r2.right);
+    }
+
+    /**
+     * 判断两棵二叉树是否相同的树（迭代）
+     * 遍历一遍即可，这里用preorder
+     */
+    public static boolean isSame(TreeNode r1, TreeNode r2) {
+        if (r1 == null && r2 == null) {
+            return true;
+        }
+
+        if (r1 == null || r2 == null) {
+            return false;
+        }
+
+        Stack<TreeNode> s1 = new Stack<TreeNode>();
+        s1.push(r1);
+        Stack<TreeNode> s2 = new Stack<TreeNode>();
+        s2.push(r2);
+
+        while (!s1.isEmpty() && !s2.isEmpty()) {
+            TreeNode node1 = s1.pop();
+            TreeNode node2 = s2.pop();
+
+            if (node1 == null && node2 == null) {
+                continue;
+            } else if (node1 != null && node2 != null && node1.val == node2.val) {
+                s1.push(node1.right);
+                s1.push(node1.left);
+                s2.push(node2.right);
+                s2.push(node2.left);
+            } else {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }
