@@ -3,6 +3,7 @@ package com.robinwu.datastructure.tree;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 
@@ -922,6 +923,105 @@ public class BinaryTreeSample {
         }
 
         return found;
+    }
+
+    /**
+     * 求二叉树中节点的最大距离 即二叉树中相距最远的两个节点之间的距离。 (distance / diameter)
+     * 递归解法：
+     * （1）如果二叉树为空，返回0，同时记录左子树和右子树的深度，都为0
+     * （2）如果二叉树不为空，最大距离要么是左子树中的最大距离，要么是右子树中的最大距离，
+     * 要么是左子树节点中到根节点的最大距离+右子树节点中到根节点的最大距离，
+     * 同时记录左子树和右子树节点中到根节点的最大距离。
+     *
+     * http://www.cnblogs.com/miloyip/archive/2010/02/25/1673114.html
+     *
+     * 计算一个二叉树的最大距离有两个情况:
+
+     情况A: 路径经过左子树的最深节点，通过根节点，再到右子树的最深节点。
+     情况B: 路径不穿过根节点，而是左子树或右子树的最大距离路径，取其大者。
+     只需要计算这两个情况的路径距离，并取其大者，就是该二叉树的最大距离
+     */
+    public static Result getMaxDistanceRec(TreeNode root) {
+        if(root == null){
+            Result empty = new Result(0, -1);       // 目的是让调用方 +1 后，把当前的不存在的 (NULL) 子树当成最大深度为 0
+            return empty;
+        }
+
+        // 计算出左右子树分别最大距离
+        Result lmd = getMaxDistanceRec(root.left);
+        Result rmd = getMaxDistanceRec(root.right);
+
+        Result res = new Result();
+        res.maxDepth = Math.max(lmd.maxDepth, rmd.maxDepth) + 1;        // 当前最大深度
+        // 取情况A和情况B中较大值
+        res.maxDistance = Math.max( lmd.maxDepth+rmd.maxDepth, Math.max(lmd.maxDistance, rmd.maxDistance) );
+        return res;
+    }
+
+    // if root only
+    // maxDistance = 0
+    // maxDepth = 0
+
+    // root + left child only
+    // maxDistance = 1
+    // maxDepth = 1
+
+    // root + left & right children only
+    // maxDistance = 2
+    // maxDepth = 1
+    private static class Result{
+        int maxDistance;
+        int maxDepth;
+        public Result() {
+        }
+
+        public Result(int maxDistance, int maxDepth) {
+            this.maxDistance = maxDistance;
+            this.maxDepth = maxDepth;
+        }
+    }
+
+    /**
+     * 13. 由前序遍历序列和中序遍历序列重建二叉树（递归）
+     * 感觉这篇是讲的最为清晰的:
+     * http://crackinterviewtoday.wordpress.com/2010/03/15/rebuild-a-binary-tree-from-inorder-and-preorder-traversals/
+     * 文中还提到一种避免开额外空间的方法，等下次补上
+     * Solution: Divide & Conquer
+     */
+    public static TreeNode rebuildBinaryTreeRec(List<Integer> preOrder, List<Integer> inOrder) {
+        TreeNode root = null;
+        List<Integer> leftPreOrder;
+        List<Integer> rightPreOrder;
+
+        List<Integer> leftInorder;
+        List<Integer> rightInorder;
+
+        int inorderPos;
+        int preorderPos;
+
+        if ((preOrder.size() != 0) && (inOrder.size() != 0)) {
+            // 把preorder的第一个元素作为root
+            root = new TreeNode(preOrder.get(0));
+
+            //  Based upon the current node data seperate the traversals into leftPreorder, rightPreorder,
+            //  leftInorder, rightInorder lists
+            // 因为知道root节点了，所以根据root节点位置，把preorder，inorder分别划分为 root左侧 和 右侧 的两个子区间
+            inorderPos = inOrder.indexOf(preOrder.get(0));      // inorder序列的分割点
+
+            leftInorder = inOrder.subList(0, inorderPos);
+            rightInorder = inOrder.subList(inorderPos + 1, inOrder.size());
+
+            preorderPos = leftInorder.size();                           // preorder序列的分割点
+            leftPreOrder = preOrder.subList(1, preorderPos + 1);
+            rightPreOrder = preOrder.subList(preorderPos + 1, preOrder.size());
+
+            // root的左子树就是preorder和inorder的左侧区间而形成的树
+            root.left = rebuildBinaryTreeRec(leftPreOrder, leftInorder);
+            // root的右子树就是preorder和inorder的右侧区间而形成的树
+            root.right = rebuildBinaryTreeRec(rightPreOrder, rightInorder);
+        }
+
+        return root;
     }
 }
 
